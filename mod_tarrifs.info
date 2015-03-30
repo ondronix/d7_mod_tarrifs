@@ -1,0 +1,11 @@
+name = Tarrifs
+description = Tarrifs management module.
+package = Other
+version = VERSION
+core = 7.x
+
+dependencies[] = entity
+##dependencies[] = views
+dependencies[] = entityreference
+
+files[] = mod_tarrifs.controller.inc

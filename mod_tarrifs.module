@@ -1,0 +1,184 @@
+<?php
+
+/**
+ * Implements hook_entity_info().
+ */
+function mod_tarrifs_entity_info()
+{
+    $return = array(
+        'mod_tarrifs' => array(
+            'label' => t('Tarrif'),
+            'entity class' => 'Tarrifs',
+            'controller class' => 'TarrifsController',
+            'base table' => 'mod_tarrifs',
+            'fieldable' => false,
+            'entity keys' => array(
+                'id' => 'trfid',
+            ),
+            'bundles' => array(),
+            'uri callback' => 'entity_class_uri',
+            'label callback' => 'mod_tarrifs_label',
+            'module' => 'mod_tarrifs',
+            'admin ui' => array(
+                'path' => 'admin/structure/tarrifs',
+                'file' => 'mod_tarrifs.admin.inc',
+                'controller class' => 'TarrifsUIController',
+            ),
+            'access callback' => 'mod_tarrifs_access',
+        ),
+    );
+    $return['mod_tarrifs_client'] = array(
+        'label' => t('Tarrifs client'),
+        'entity class' => 'TarrifsClientType',
+        'controller class' => 'TarrifsClientTypeController',
+        'base table' => 'mod_tarrifs_client',
+        'fieldable' => FALSE,
+        'entity keys' => array(
+            'id' => 'id',
+            'label' => 'type',
+        ),
+        'uri callback' => 'entity_class_uri',
+        'label callback' => 'mod_tarrifs_label',
+        'module' => 'mod_tarrifs',
+        'admin ui' => array(
+            'path' => 'admin/structure/tarrifs-clients',
+            'file' => 'mod_tarrifs.admin.inc',
+            'controller class' => 'TarrifsClientTypeUIController',
+        ),
+        'access callback' => 'mod_tarrifs_access',
+    );
+    $return['mod_tarrifs_service'] = array(
+        'label' => t('Tarrifs service'),
+        'entity class' => 'TarrifsServiceType',
+        'controller class' => 'TarrifsServiceTypeController',
+        'base table' => 'mod_tarrifs_service',
+        'fieldable' => FALSE,
+        'entity keys' => array(
+            'id' => 'id',
+            'label' => 'type',
+        ),
+        'uri callback' => 'entity_class_uri',
+        'label callback' => 'mod_tarrifs_label',
+        'module' => 'mod_tarrifs',
+        'admin ui' => array(
+            'path' => 'admin/structure/tarrifs-services',
+            'file' => 'mod_tarrifs.admin.inc',
+            'controller class' => 'TarrifsServiceTypeUIController',
+        ),
+        'access callback' => 'mod_tarrifs_access',
+    );
+
+    return $return;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mod_tarrifs_menu()
+{
+    $items = array();
+
+    /* Add */
+
+    $items['tarrifs/add'] = array(
+        'title' => 'Add tarrifs record',
+        'page callback' => 'mod_tarrifs_form',
+        'access arguments' => array('administer mod_tarrifs'),
+        'file' => 'mod_tarrifs.admin.inc',
+        'type' => MENU_CALLBACK
+    );
+
+
+    /* View */
+
+    $items['tarrifs/%'] = array(
+        'title' => 'Tarrif',
+        'page callback' => 'mod_tarrifs_view',
+        'page arguments' => array('mod_tarrifs', 1),
+        'file' => 'mod_tarrifs.pages.inc',
+        'access arguments' => array('access mod_tarrifs'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['tarrifs_client/%'] = array(
+        'title' => 'Client',
+        'page callback' => 'mod_tarrifs_view',
+        'page arguments' => array('mod_tarrifs_client', 1),
+        'file' => 'mod_tarrifs.pages.inc',
+        'access arguments' => array('access mod_tarrifs'),
+        'type' => MENU_CALLBACK
+    );
+
+    $items['tarrifs_service/%'] = array(
+        'title' => 'Service',
+        'page callback' => 'mod_tarrifs_view',
+        'page arguments' => array('mod_tarrifs_service', 1),
+        'file' => 'mod_tarrifs.pages.inc',
+        'access arguments' => array('access mod_tarrifs'),
+        'type' => MENU_CALLBACK
+    );
+
+    return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function mod_tarrifs_permission()
+{
+    $permissions = array(
+        'administer mod_tarrifs' => array(
+            'title' => t('Administer mod_tarrifs'),
+            'restrict access' => TRUE,
+        ),
+        'access mod_tarrifs' => array(
+            'title' => t('Access to mod_tarrifs'),
+            'restrict access' => TRUE,
+        )
+    );
+
+    return $permissions;
+}
+
+/**
+ * Access callback
+ */
+function mod_tarrifs_access($op, $entity, $account = NULL, $entity_type = NULL)
+{
+    global $user;
+
+    if (!isset($account)) {
+        $account = $user;
+    }
+    switch ($op) {
+        case 'create':
+        case 'update':
+        case 'edit':
+        case 'delete':
+            return user_access('administer mod_tarrifs', $account);
+        case 'view':
+            return user_access('access mod_tarrifs', $account);
+    }
+}
+
+/**
+ * Labels
+ */
+
+function mod_tarrifs_label($entity, $entity_type) {
+
+    $entity_id = entity_id($entity_type, $entity);
+
+    if (!$entity_id) {
+        return '';
+    }
+
+    if ($entity_type=='mod_tarrifs_client' || $entity_type=='mod_tarrifs_service') {
+        return sprintf('%s (%s)', $entity->label, $entity->type);
+    }
+
+    $client_entity = $entity->getClientEntity();
+    $service_entity = $entity->getServiceEntity();
+
+    return sprintf('%s - %s - %d', $client_entity->label, $service_entity->label, $entity->prefix);
+}

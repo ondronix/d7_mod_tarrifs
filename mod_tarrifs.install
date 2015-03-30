@@ -1,0 +1,186 @@
+<?php
+
+
+function mod_tarrifs_install()
+{
+
+    //fields
+
+    $field_client = array(
+        'field_name' => 'mod_tarrifs_client_ref',
+        'cardinality' => 1,
+        'type' => 'entityreference',
+        'settings' => array(
+            'target_type' => 'mod_tarrifs_client',
+        )
+    );
+    field_create_field($field_client);
+
+    $field_service = array(
+        'field_name' => 'mod_tarrifs_service_ref',
+        'cardinality' => 1,
+        'type' => 'entityreference',
+        'settings' => array(
+            'target_type' => 'mod_tarrifs_service',
+        )
+    );
+    field_create_field($field_service);
+
+    //instances
+
+    $field_instance_client = array(
+        'field_name' => 'mod_tarrifs_client_ref',
+        'label' => 'Client',
+        'required' => TRUE,
+        'entity_type' => 'mod_tarrifs',
+        'bundle' => 'mod_tarrifs'
+    );
+    field_create_instance($field_instance_client);
+
+    $field_instance_service = array(
+        'field_name' => 'mod_tarrifs_service_ref',
+        'label' => 'Service',
+        'required' => TRUE,
+        'entity_type' => 'mod_tarrifs',
+        'bundle' => 'mod_tarrifs'
+    );
+    field_create_instance($field_instance_service);
+
+}
+
+function mod_tarrifs_uninstall()
+{
+    field_delete_field('mod_tarrifs_client_ref');
+    field_delete_field('mod_tarrifs_service_ref');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function mod_tarrifs_schema()
+{
+
+    $schema = array();
+
+    $schema['mod_tarrifs'] = array(
+        'fields' => array(
+            'trfid' => array(
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ),
+            'client' => array(
+                'type' => 'int',
+                'not null' => TRUE,
+            ),
+            'service' => array(
+                'type' => 'int',
+                'not null' => TRUE,
+            ),
+
+            'prefix' => array(
+                'type' => 'varchar',
+                'length' => 16,
+                'not null' => TRUE,
+                'default' => '',
+            ),
+
+            'price' => array(
+                'type' => 'float',
+                'not null' => TRUE,
+            ),
+
+            'currency' => array(
+                'type' => 'varchar',
+                'length' => 8,
+                'not null' => TRUE,
+                'default' => '',
+            ),
+            'created' => array(
+                'type' => 'int',
+                'not null' => TRUE,
+                'default' => 0,
+            ),
+            'changed' => array(
+                'type' => 'int',
+                'not null' => TRUE,
+                'default' => 0,
+            )
+        ),
+        'primary key' => array('trfid'),
+        'indexes' =>array(
+            'client' => array('client'),
+            'service' => array('service'),
+            'prefix' => array('prefix'),
+        ),
+        'unique keys' => array(
+            'client_service_prefix' => array('client', 'service', 'prefix'),
+        ),
+    );
+
+    $schema['mod_tarrifs_client'] = array(
+        'fields' => array(
+                'id' => array(
+                    'type' => 'serial',
+                    'not null' => TRUE,
+                ),
+                'type' => array(
+                    'description' => 'The machine-readable name of this client.',
+                    'type' => 'varchar',
+                    'length' => 32,
+                    'not null' => TRUE,
+                ),
+                'label' => array(
+                    'description' => 'The human-readable name of this client.',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'not null' => TRUE,
+                    'default' => '',
+                ),
+                'description' => array(
+                    'description' => 'A brief description of this client.',
+                    'type' => 'text',
+                    'not null' => TRUE,
+                    'size' => 'medium',
+                ),
+            ),
+        'primary key' => array('id'),
+        'unique keys' => array(
+            'type' => array('type'),
+        ),
+    );
+
+    $schema['mod_tarrifs_service'] = array(
+        'fields' => array(
+                'id' => array(
+                    'type' => 'serial',
+                    'not null' => TRUE,
+                ),
+                'type' => array(
+                    'description' => 'The machine-readable name of this service.',
+                    'type' => 'varchar',
+                    'length' => 32,
+                    'not null' => TRUE,
+                ),
+                'label' => array(
+                    'description' => 'The human-readable name of this service.',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'not null' => TRUE,
+                    'default' => '',
+                ),
+                'description' => array(
+                    'description' => 'A brief description of this service.',
+                    'type' => 'text',
+                    'not null' => TRUE,
+                    'size' => 'medium',
+                ),
+            ),
+        'primary key' => array('id'),
+        'unique keys' => array(
+            'type' => array('type'),
+        ),
+    );
+
+    return $schema;
+}
