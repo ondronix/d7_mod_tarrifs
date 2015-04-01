@@ -4,54 +4,147 @@
 function mod_tarrifs_install()
 {
 
+    //create vocabulary + terms
+
+    //clients
+    $tarrifs_clients_vocab = (object) array(
+        'name' => 'Tarrifs clients',
+        'machine_name' => 'tarrifs_clients_vocab',
+    );
+    taxonomy_vocabulary_save($tarrifs_clients_vocab);
+    $tarrifs_clients_vocab = taxonomy_vocabulary_machine_name_load('tarrifs_clients_vocab');
+
+    $t1 = (object) array('name' => 'tsic', 'vid' => $tarrifs_clients_vocab->vid);
+    taxonomy_term_save($t1);
+    $t1 = (object) array('name' => 'purple', 'vid' => $tarrifs_clients_vocab->vid);
+    taxonomy_term_save($t1);
+    //... other clients if needed ...
+
+    //services
+    $tarrifs_services_vocab = (object) array(
+        'name' => 'Tarrifs services',
+        'machine_name' => 'tarrifs_services_vocab',
+    );
+    taxonomy_vocabulary_save($tarrifs_services_vocab);
+    $tarrifs_services_vocab = taxonomy_vocabulary_machine_name_load('tarrifs_services_vocab');
+
+    $t1 = (object) array('name' => 'voice', 'vid' => $tarrifs_services_vocab->vid);
+    taxonomy_term_save($t1);
+    //... other services if needed ...
+
+    //currencies
+    $tarrifs_currencies_vocab = (object) array(
+        'name' => 'Tarrifs currencies',
+        'machine_name' => 'tarrifs_currencies_vocab',
+    );
+    taxonomy_vocabulary_save($tarrifs_currencies_vocab);
+    $tarrifs_currencies_vocab = taxonomy_vocabulary_machine_name_load('tarrifs_currencies_vocab');
+
+    $t1 = (object) array('name' => 'USD', 'vid' => $tarrifs_currencies_vocab->vid);
+    taxonomy_term_save($t1);
+    //... other currencies if needed ...
+
     //fields
 
     $field_client = array(
-        'field_name' => 'mod_tarrifs_client_ref',
+        'field_name' => 'mod_tarrifs_client_tid',
         'cardinality' => 1,
-        'type' => 'entityreference',
+        'type' => 'taxonomy_term_reference',
         'settings' => array(
-            'target_type' => 'mod_tarrifs_client',
+            'allowed_values' => array(
+                array(
+                    'vocabulary'=>'tarrifs_clients_vocab',
+                    'parent' => 0
+                ),
+            )
         )
     );
     field_create_field($field_client);
 
     $field_service = array(
-        'field_name' => 'mod_tarrifs_service_ref',
+        'field_name' => 'mod_tarrifs_service_tid',
         'cardinality' => 1,
-        'type' => 'entityreference',
+        'type' => 'taxonomy_term_reference',
         'settings' => array(
-            'target_type' => 'mod_tarrifs_service',
+            'allowed_values' => array(
+                array(
+                    'vocabulary'=>'tarrifs_services_vocab',
+                    'parent' => 0
+                ),
+            )
         )
     );
     field_create_field($field_service);
 
+    $field_currency = array(
+        'field_name' => 'mod_tarrifs_currency_tid',
+        'cardinality' => 1,
+        'type' => 'taxonomy_term_reference',
+        'settings' => array(
+            'allowed_values' => array(
+                array(
+                    'vocabulary'=>'tarrifs_currencies_vocab',
+                    'parent' => 0
+                ),
+            )
+        )
+    );
+    field_create_field($field_currency);
+
     //instances
 
     $field_instance_client = array(
-        'field_name' => 'mod_tarrifs_client_ref',
+        'field_name' => 'mod_tarrifs_client_tid',
         'label' => 'Client',
         'required' => TRUE,
         'entity_type' => 'mod_tarrifs',
-        'bundle' => 'mod_tarrifs'
+        'bundle' => 'mod_tarrifs',
+        'widget' => array(
+            'type' => 'options_select'
+        )
     );
     field_create_instance($field_instance_client);
 
     $field_instance_service = array(
-        'field_name' => 'mod_tarrifs_service_ref',
+        'field_name' => 'mod_tarrifs_service_tid',
         'label' => 'Service',
         'required' => TRUE,
         'entity_type' => 'mod_tarrifs',
-        'bundle' => 'mod_tarrifs'
+        'bundle' => 'mod_tarrifs',
+        'widget' => array(
+            'type' => 'options_select'
+        )
     );
     field_create_instance($field_instance_service);
+
+    $field_instance_currency = array(
+        'field_name' => 'mod_tarrifs_currency_tid',
+        'label' => 'Currency',
+        'required' => TRUE,
+        'entity_type' => 'mod_tarrifs',
+        'bundle' => 'mod_tarrifs',
+        'widget' => array(
+            'type' => 'options_select'
+        )
+    );
+    field_create_instance($field_instance_currency);
 
 }
 
 function mod_tarrifs_uninstall()
 {
-    field_delete_field('mod_tarrifs_client_ref');
-    field_delete_field('mod_tarrifs_service_ref');
+    field_delete_field('mod_tarrifs_client_tid');
+    field_delete_field('mod_tarrifs_service_tid');
+    field_delete_field('mod_tarrifs_currency_tid');
+
+    $tarrifs_clients_vocab = taxonomy_vocabulary_machine_name_load('tarrifs_clients_vocab');
+    taxonomy_vocabulary_delete($tarrifs_clients_vocab->vid);
+
+    $tarrifs_services_vocab = taxonomy_vocabulary_machine_name_load('tarrifs_services_vocab');
+    taxonomy_vocabulary_delete($tarrifs_services_vocab->vid);
+
+    $tarrifs_currencies_vocab = taxonomy_vocabulary_machine_name_load('tarrifs_currencies_vocab');
+    taxonomy_vocabulary_delete($tarrifs_currencies_vocab->vid);
 }
 
 /**
@@ -70,12 +163,16 @@ function mod_tarrifs_schema()
                 'not null' => TRUE,
             ),
             'client' => array(
-                'type' => 'int',
+                'type' => 'varchar',
+                'length' => 16,
                 'not null' => TRUE,
+                'default' => '',
             ),
             'service' => array(
-                'type' => 'int',
+                'type' => 'varchar',
+                'length' => 16,
                 'not null' => TRUE,
+                'default' => '',
             ),
 
             'prefix' => array(
@@ -92,15 +189,17 @@ function mod_tarrifs_schema()
 
             'currency' => array(
                 'type' => 'varchar',
-                'length' => 8,
+                'length' => 16,
                 'not null' => TRUE,
                 'default' => '',
             ),
+
             'created' => array(
                 'type' => 'int',
                 'not null' => TRUE,
                 'default' => 0,
             ),
+
             'changed' => array(
                 'type' => 'int',
                 'not null' => TRUE,
@@ -115,70 +214,6 @@ function mod_tarrifs_schema()
         ),
         'unique keys' => array(
             'client_service_prefix' => array('client', 'service', 'prefix'),
-        ),
-    );
-
-    $schema['mod_tarrifs_client'] = array(
-        'fields' => array(
-                'id' => array(
-                    'type' => 'serial',
-                    'not null' => TRUE,
-                ),
-                'type' => array(
-                    'description' => 'The machine-readable name of this client.',
-                    'type' => 'varchar',
-                    'length' => 32,
-                    'not null' => TRUE,
-                ),
-                'label' => array(
-                    'description' => 'The human-readable name of this client.',
-                    'type' => 'varchar',
-                    'length' => 255,
-                    'not null' => TRUE,
-                    'default' => '',
-                ),
-                'description' => array(
-                    'description' => 'A brief description of this client.',
-                    'type' => 'text',
-                    'not null' => TRUE,
-                    'size' => 'medium',
-                ),
-            ),
-        'primary key' => array('id'),
-        'unique keys' => array(
-            'type' => array('type'),
-        ),
-    );
-
-    $schema['mod_tarrifs_service'] = array(
-        'fields' => array(
-                'id' => array(
-                    'type' => 'serial',
-                    'not null' => TRUE,
-                ),
-                'type' => array(
-                    'description' => 'The machine-readable name of this service.',
-                    'type' => 'varchar',
-                    'length' => 32,
-                    'not null' => TRUE,
-                ),
-                'label' => array(
-                    'description' => 'The human-readable name of this service.',
-                    'type' => 'varchar',
-                    'length' => 255,
-                    'not null' => TRUE,
-                    'default' => '',
-                ),
-                'description' => array(
-                    'description' => 'A brief description of this service.',
-                    'type' => 'text',
-                    'not null' => TRUE,
-                    'size' => 'medium',
-                ),
-            ),
-        'primary key' => array('id'),
-        'unique keys' => array(
-            'type' => array('type'),
         ),
     );
 

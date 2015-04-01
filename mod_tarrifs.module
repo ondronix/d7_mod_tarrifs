@@ -11,7 +11,7 @@ function mod_tarrifs_entity_info()
             'entity class' => 'Tarrifs',
             'controller class' => 'TarrifsController',
             'base table' => 'mod_tarrifs',
-            'fieldable' => false,
+            'fieldable' => true,
             'entity keys' => array(
                 'id' => 'trfid',
             ),
@@ -27,46 +27,6 @@ function mod_tarrifs_entity_info()
             'access callback' => 'mod_tarrifs_access',
         ),
     );
-    $return['mod_tarrifs_client'] = array(
-        'label' => t('Tarrifs client'),
-        'entity class' => 'TarrifsClientType',
-        'controller class' => 'TarrifsClientTypeController',
-        'base table' => 'mod_tarrifs_client',
-        'fieldable' => FALSE,
-        'entity keys' => array(
-            'id' => 'id',
-            'label' => 'type',
-        ),
-        'uri callback' => 'entity_class_uri',
-        'label callback' => 'mod_tarrifs_label',
-        'module' => 'mod_tarrifs',
-        'admin ui' => array(
-            'path' => 'admin/structure/tarrifs-clients',
-            'file' => 'mod_tarrifs.admin.inc',
-            'controller class' => 'TarrifsClientTypeUIController',
-        ),
-        'access callback' => 'mod_tarrifs_access',
-    );
-    $return['mod_tarrifs_service'] = array(
-        'label' => t('Tarrifs service'),
-        'entity class' => 'TarrifsServiceType',
-        'controller class' => 'TarrifsServiceTypeController',
-        'base table' => 'mod_tarrifs_service',
-        'fieldable' => FALSE,
-        'entity keys' => array(
-            'id' => 'id',
-            'label' => 'type',
-        ),
-        'uri callback' => 'entity_class_uri',
-        'label callback' => 'mod_tarrifs_label',
-        'module' => 'mod_tarrifs',
-        'admin ui' => array(
-            'path' => 'admin/structure/tarrifs-services',
-            'file' => 'mod_tarrifs.admin.inc',
-            'controller class' => 'TarrifsServiceTypeUIController',
-        ),
-        'access callback' => 'mod_tarrifs_access',
-    );
 
     return $return;
 }
@@ -78,41 +38,12 @@ function mod_tarrifs_menu()
 {
     $items = array();
 
-    /* Add */
-
-    $items['tarrifs/add'] = array(
-        'title' => 'Add tarrifs record',
-        'page callback' => 'mod_tarrifs_form',
-        'access arguments' => array('administer mod_tarrifs'),
-        'file' => 'mod_tarrifs.admin.inc',
-        'type' => MENU_CALLBACK
-    );
-
-
     /* View */
 
     $items['tarrifs/%'] = array(
         'title' => 'Tarrif',
         'page callback' => 'mod_tarrifs_view',
         'page arguments' => array('mod_tarrifs', 1),
-        'file' => 'mod_tarrifs.pages.inc',
-        'access arguments' => array('access mod_tarrifs'),
-        'type' => MENU_CALLBACK
-    );
-
-    $items['tarrifs_client/%'] = array(
-        'title' => 'Client',
-        'page callback' => 'mod_tarrifs_view',
-        'page arguments' => array('mod_tarrifs_client', 1),
-        'file' => 'mod_tarrifs.pages.inc',
-        'access arguments' => array('access mod_tarrifs'),
-        'type' => MENU_CALLBACK
-    );
-
-    $items['tarrifs_service/%'] = array(
-        'title' => 'Service',
-        'page callback' => 'mod_tarrifs_view',
-        'page arguments' => array('mod_tarrifs_service', 1),
         'file' => 'mod_tarrifs.pages.inc',
         'access arguments' => array('access mod_tarrifs'),
         'type' => MENU_CALLBACK
@@ -173,12 +104,5 @@ function mod_tarrifs_label($entity, $entity_type) {
         return '';
     }
 
-    if ($entity_type=='mod_tarrifs_client' || $entity_type=='mod_tarrifs_service') {
-        return sprintf('%s (%s)', $entity->label, $entity->type);
-    }
-
-    $client_entity = $entity->getClientEntity();
-    $service_entity = $entity->getServiceEntity();
-
-    return sprintf('%s - %s - %d', $client_entity->label, $service_entity->label, $entity->prefix);
+    return sprintf('%s - %s - %d', $entity->client, $entity->service, $entity->prefix);
 }
